@@ -28,5 +28,5 @@ public interface ProductRepository extends JpaRepository<Product, String> {
      * @param inProductNumber Product number of product to check whether present in the repository.
      * @return True if a product with the product number exists in the repository, false otherwise.
      */
-    boolean existByProductNumber(String inProductNumber);
+    boolean existsByProductNumber(String inProductNumber);
 }

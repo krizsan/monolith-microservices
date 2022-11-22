@@ -66,7 +66,7 @@ class WarehouseServiceImplementationTest {
      */
     @Test
     void createProductInWarehouseTest() {
-        Assertions.assertTrue(mProductRepository.existByProductNumber(PRODUCTA_PRODUCTNUMBER),
+        Assertions.assertTrue(mProductRepository.existsByProductNumber(PRODUCTA_PRODUCTNUMBER),
             "A product should have been created in the warehouse");
     }
 

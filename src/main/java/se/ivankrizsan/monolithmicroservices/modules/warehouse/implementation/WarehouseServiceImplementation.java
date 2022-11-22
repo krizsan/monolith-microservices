@@ -72,7 +72,7 @@ public class WarehouseServiceImplementation implements WarehouseService {
             .availableAmount(0)
             .reservedAmount(0);
 
-        if (!mProductRepository.existByProductNumber(inProductNumber)) {
+        if (!mProductRepository.existsByProductNumber(inProductNumber)) {
             mProductRepository.save(theNewProduct);
         }
     }
