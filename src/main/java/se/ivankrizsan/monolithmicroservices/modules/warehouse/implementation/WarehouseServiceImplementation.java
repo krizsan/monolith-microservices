@@ -14,6 +14,8 @@ import java.util.Optional;
 
 /**
  * Implementation of the {@link WarehouseService}.
+ *
+ * @author Ivan Krizsan
  */
 @RequiredArgsConstructor
 public class WarehouseServiceImplementation implements WarehouseService {

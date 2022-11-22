@@ -3,6 +3,8 @@ package se.ivankrizsan.monolithmicroservices.modules.shoppingcart.api;
 /**
  * The shopping cart service manages a shopping cart.
  * Note: In its current incarnation, the service only manages a single shopping cart at a time.
+ *
+ * @author Ivan Krizsan
  */
 public interface ShoppingCartService {
 

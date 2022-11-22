@@ -12,6 +12,8 @@ import java.util.Optional;
 
 /**
  * Implementation of the {@link ShoppingCartService}.
+ *
+ * @author Ivan Krizsan
  */
 @RequiredArgsConstructor
 public class ShoppingCartServiceImplementation implements ShoppingCartService {

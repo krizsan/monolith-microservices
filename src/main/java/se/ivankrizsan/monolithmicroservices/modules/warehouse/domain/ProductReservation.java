@@ -14,6 +14,8 @@ import java.util.Objects;
 
 /**
  * Entity representing a reserved amount of a product in the warehouse.
+ *
+ * @author Ivan Krizsan
  */
 @Entity
 @Getter

@@ -6,6 +6,8 @@ import java.util.Optional;
 
 /**
  * The warehouse service represents a warehouse containing the products that are available for purchase.
+ *
+ * @author Ivan Krizsan
  */
 public interface WarehouseService {
     /**

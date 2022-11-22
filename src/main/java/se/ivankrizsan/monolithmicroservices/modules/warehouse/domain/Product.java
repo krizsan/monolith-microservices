@@ -8,6 +8,8 @@ import java.util.Objects;
 
 /**
  * Entity representing a product in a warehouse.
+ *
+ * @author Ivan Krizsan
  */
 @Entity
 @Getter
