@@ -66,13 +66,12 @@ public class WarehouseServiceImplementation implements WarehouseService {
 
     @Override
     public void createProductInWarehouse(final String inProductNumber, final String inProductName) {
-        final Product theNewProduct = new Product()
-            .productNumber(inProductNumber)
-            .name(inProductName)
-            .availableAmount(0)
-            .reservedAmount(0);
-
         if (!mProductRepository.existsByProductNumber(inProductNumber)) {
+            final Product theNewProduct = new Product()
+                    .productNumber(inProductNumber)
+                    .name(inProductName)
+                    .availableAmount(0)
+                    .reservedAmount(0);
             mProductRepository.save(theNewProduct);
         }
     }
@@ -80,6 +79,15 @@ public class WarehouseServiceImplementation implements WarehouseService {
     @Override
     public void increaseProductStock(final String inProductNumber, final double inAmount)
         throws ProductNotInWarehouseException {
+        final Optional<Product> theProductOptional = mProductRepository.findByProductNumber(inProductNumber);
+        if (theProductOptional.isEmpty()) {
+            throw new ProductNotInWarehouseException(inProductNumber);
+        }
 
+        /* Increase the product's available amount. */
+        final Product theProduct = theProductOptional.get();
+        final double theNewProductAmount = theProduct.availableAmount() + inAmount;
+        theProduct.availableAmount(theNewProductAmount);
+        mProductRepository.save(theProduct);
     }
 }
