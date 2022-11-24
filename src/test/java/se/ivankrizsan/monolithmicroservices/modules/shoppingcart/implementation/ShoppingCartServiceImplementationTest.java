@@ -1,20 +1,23 @@
 package se.ivankrizsan.monolithmicroservices.modules.shoppingcart.implementation;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ContextConfiguration;
-import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.domain.ShoppingCartItem;
+import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.api.ShoppingCartService;
+import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.configuration.ShoppingCartConfiguration;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.configuration.WarehouseConfiguration;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.domain.Product;
+import se.ivankrizsan.monolithmicroservices.modules.warehouse.domain.ProductReservation;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.implementation.WarehouseServiceImplementation;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.ProductRepository;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.ProductReservationRepository;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Tests the {@link WarehouseServiceImplementation}.
@@ -22,48 +25,92 @@ import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.Produc
  * @author Ivan Krizsan
  */
 @DataJpaTest()
-@EnableJpaRepositories(basePackageClasses = ProductRepository.class)
-@ContextConfiguration(classes = { WarehouseConfiguration.class })
-@EntityScan(basePackageClasses = ShoppingCartItem.class)
+@ContextConfiguration(classes = { ShoppingCartConfiguration.class, WarehouseConfiguration.class })
 class ShoppingCartServiceImplementationTest {
     /* Constant(s): */
     public final static String PRODUCTA_PRODUCTNUMBER = "12345-1";
-    public final static String NONEXISTING_PRODUCTNUMBER = "00000-0";
     public final static double PRODUCTA_AVAILABLEAMOUNT = 100;
-    public final static double PRODUCTA_RESERVEAMOUNT = 55;
 
     /* Instance variable(s): */
     @Autowired
+    protected WarehouseService mWarehouseService;
+    @Autowired
+    protected ShoppingCartService mShoppingCartService;
+    @Autowired
     protected ProductRepository mProductRepository;
     @Autowired
-    protected ProductReservationRepository mProductReservationRepository;
-    @Autowired
-    protected WarehouseService mWarehouseService;
+    protected ProductReservationRepository mProductReservationsRepository;
 
     /**
-     * Sets up information in database tables etc before each test.
+     * Sets up information in database tables before each test.
      */
     @BeforeEach
     void setUpBeforeEachTest() {
-        final Product theProduct = new Product()
-            .name("Product A")
-            .productNumber(PRODUCTA_PRODUCTNUMBER)
-            .availableAmount(PRODUCTA_AVAILABLEAMOUNT)
-            .reservedAmount(0);
-
-        mProductRepository.save(theProduct);
+        mWarehouseService.createProductInWarehouse(PRODUCTA_PRODUCTNUMBER, "Product A");
+        mWarehouseService.increaseProductStock(PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
     }
 
     /**
-     * Cleans up after each test by deleting information in database tables etc.
+     * Cleans up after each test by deleting information in database tables.
      */
     @AfterEach
     void cleanUpAfterEachTest() {
         mProductRepository.deleteAll();
-        mProductReservationRepository.deleteAll();
+        mProductReservationsRepository.deleteAll();
     }
 
+    /**
+     * Tests adding all the remaining stock of a product to the shopping-cart.
+     * Expected result:
+     * All the remaining stock of the product should have been placed in the cart.
+     * All the stock of the product should be reserved.
+     * There should be no remaining available stock of the product.
+     */
     @Test
-    void addItemToCartTest() {
+    void addItemEntireStockToCartTest() {
+        final boolean theAddItemSuccessFlag = mShoppingCartService.addItemToCart(
+            PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
+        Assertions.assertTrue(theAddItemSuccessFlag,
+            "It should be possible to add all the remaining stock for a product to the shoppingcart");
+
+        final Optional<Double> theRemainingAvailableAmountOptional =
+            mWarehouseService.retrieveProductAvailableAmount(PRODUCTA_PRODUCTNUMBER);
+        Assertions.assertTrue(theRemainingAvailableAmountOptional.isPresent());
+        Assertions.assertEquals(0, theRemainingAvailableAmountOptional.get(),
+            "There should be no remaining available stock of the product");
+
+        final List<ProductReservation> theProductAReservations =
+            mProductReservationsRepository.findAllByProductNumber(PRODUCTA_PRODUCTNUMBER);
+        Assertions.assertEquals(1, theProductAReservations.size(),
+            "There should be a single product reservation");
+        final ProductReservation theProductAReservation = theProductAReservations.get(0);
+        Assertions.assertEquals(PRODUCTA_AVAILABLEAMOUNT, theProductAReservation.getReservedAmount(),
+            "All of the stock of the product should be reserved");
+    }
+
+    /**
+     * Tests adding more than the remaining stock of a product to the shopping-cart.
+     * Expected result:
+     * Adding the product to the shopping-cart should fail.
+     * There should be no reservations of the product.
+     * The available amount of the product in the warehouse should remain unchanged.
+     */
+    @Test
+    void addItemAmountNotInStockToCartTest() {
+        final boolean theAddItemSuccessFlag = mShoppingCartService.addItemToCart(
+            PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT * 2);
+        Assertions.assertFalse(theAddItemSuccessFlag,
+            "It should not be possible to add more than the available stock of a product to the shoppingcart");
+
+        final Optional<Double> theRemainingAvailableAmountOptional =
+            mWarehouseService.retrieveProductAvailableAmount(PRODUCTA_PRODUCTNUMBER);
+        Assertions.assertTrue(theRemainingAvailableAmountOptional.isPresent());
+        Assertions.assertEquals(PRODUCTA_AVAILABLEAMOUNT, theRemainingAvailableAmountOptional.get(),
+            "The available amount in the warehouse should remain unchanged");
+
+        final List<ProductReservation> theProductAReservations =
+            mProductReservationsRepository.findAllByProductNumber(PRODUCTA_PRODUCTNUMBER);
+        Assertions.assertEquals(0, theProductAReservations.size(),
+            "There should be no reservations for the product");
     }
 }
