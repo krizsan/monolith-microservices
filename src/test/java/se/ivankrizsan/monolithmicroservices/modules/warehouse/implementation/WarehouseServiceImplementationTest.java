@@ -5,13 +5,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ContextConfiguration;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.configuration.WarehouseConfiguration;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.domain.Product;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.ProductRepository;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.ProductReservationRepository;
 
@@ -23,9 +20,7 @@ import java.util.Optional;
  * @author Ivan Krizsan
  */
 @DataJpaTest()
-@EnableJpaRepositories(basePackageClasses = ProductRepository.class)
 @ContextConfiguration(classes = { WarehouseConfiguration.class })
-@EntityScan(basePackageClasses = Product.class)
 class WarehouseServiceImplementationTest {
     /* Constant(s): */
     public final static String PRODUCTA_PRODUCTNUMBER = "12345-1";
@@ -37,12 +32,12 @@ class WarehouseServiceImplementationTest {
     @Autowired
     protected ProductRepository mProductRepository;
     @Autowired
-    protected ProductReservationRepository mProductReservationRepository;
+    protected ProductReservationRepository mProductReservationsRepository;
     @Autowired
     protected WarehouseService mWarehouseService;
 
     /**
-     * Sets up information in database tables etc before each test.
+     * Sets up information in database tables before each test.
      */
     @BeforeEach
     void setUpBeforeEachTest() {
@@ -51,12 +46,12 @@ class WarehouseServiceImplementationTest {
     }
 
     /**
-     * Cleans up after each test by deleting information in database tables etc.
+     * Cleans up after each test by deleting information in database tables.
      */
     @AfterEach
     void cleanUpAfterEachTest() {
         mProductRepository.deleteAll();
-        mProductReservationRepository.deleteAll();
+        mProductReservationsRepository.deleteAll();
     }
 
     /**
