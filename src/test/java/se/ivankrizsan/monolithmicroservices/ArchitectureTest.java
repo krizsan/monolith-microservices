@@ -11,19 +11,28 @@ import org.junit.jupiter.api.Test;
 
 public class ArchitectureTest {
 
+    /**
+     * Ensures that external access to modules is limited to the api and configuration
+     * first-level subpackages of the module.
+     */
     @Test
     public void architectureOneTest() {
+        /* Classes to be examined for architectural constraints. */
         final JavaClasses theClassesToCheck = new ClassFileImporter()
             .importPackages("se.ivankrizsan");
 
         final SliceAssignment theSliceAssignment = new SliceAssignment() {
             @Override
             public SliceIdentifier getIdentifierOf(JavaClass javaClass) {
+                /*
+                 * We are only concerned with modules, that is code contained in packages below the
+                 * modules package.
+                 */
                 if (javaClass.getPackageName().contains(".modules.")) {
                     final String theModuleSubPackage = javaClass
                         .getPackageName()
-                        .replace("se.ivankrizsan.monolithmicroservices.modules.", "");
-                    final String theModule = theModuleSubPackage.split("\\.")[0];
+                        .replaceAll(".*modules.", "");
+                    final String theModuleName = theModuleSubPackage.split("\\.")[0];
 
                     /*
                      * The subpackages api and configuration of a module may be accessed from anywhere,
@@ -33,7 +42,7 @@ public class ArchitectureTest {
                         return SliceIdentifier.ignore();
                     }
 
-                    return SliceIdentifier.of("Module-" + theModule);
+                    return SliceIdentifier.of("Module-" + theModuleName);
                 }
 
                 return SliceIdentifier.ignore();
