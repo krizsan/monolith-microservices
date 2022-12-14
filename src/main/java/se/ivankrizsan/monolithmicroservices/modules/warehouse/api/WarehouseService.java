@@ -11,7 +11,8 @@ import java.util.Optional;
  */
 public interface WarehouseService {
     /**
-     * Reports the available inventory amount for the product with the supplied product number in the warehouse.
+     * Reports the available inventory amount for the product in the warehouse with the supplied
+     * product number.
      *
      * @param inProductNumber Product number of the product for which to report available inventory balance.
      * @return Available product inventory or empty if no matching product available.
@@ -19,7 +20,15 @@ public interface WarehouseService {
     Optional<Double> retrieveProductAvailableAmount(String inProductNumber);
 
     /**
-     * Reserves the supplied amount of the product with the supplied product number in the warehouse.
+     * Retrieves the unit price for the product in the warehouse with the supplied product number.
+     *
+     * @param inProductNumber Product number of the product which unit price to retrieve.
+     * @return Product unit price or empty if product not found in warehouse.
+     */
+    Optional<Double> retrieveProductUnitPrice(String inProductNumber);
+
+    /**
+     * Reserves the supplied amount of the product in the warehouse with the supplied product number.
      *
      * @param inProductNumber Product number of the product to reserve.
      * @param inAmount Amount of the product to reserve.
@@ -28,14 +37,23 @@ public interface WarehouseService {
     Optional<Long> reserveProduct(String inProductNumber, double inAmount);
 
     /**
-     * Creates the product with the supplied product number and the supplied name in the warehouse
-     * setting its available and reserved amounts to zero.
+     * Retrieves the reserved amount for the supplied product reservation.
+     *
+     * @param inProductReservation Product reservation for which to retrieve reserved amount.
+     * @return Reserved amount or empty if no product reservation exists.
+     */
+    Optional<Double> retrieveReservationAmount(Long inProductReservation);
+
+    /**
+     * Creates the product with the supplied product number, the supplied name and the supplied unit
+     * price in the warehouse setting its available and reserved amounts to zero.
      * Does nothing if a product with the supplied product number already exists in the warehouse.
      *
      * @param inProductNumber Product number of product to create. Must be unique in the warehouse.
      * @param inProductName Name of the product to create.
+     * @param inUnitPrice Product's unit price.
      */
-    void createProductInWarehouse(String inProductNumber, String inProductName);
+    void createProductInWarehouse(String inProductNumber, String inProductName, Double inUnitPrice);
 
     /**
      * Increases the warehouse stock of the product with the supplied product number with the supplied amount.
