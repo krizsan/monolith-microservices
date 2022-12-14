@@ -16,4 +16,12 @@ public interface ShoppingCartService {
      * @return True if item successfully added to shopping cart, false otherwise.
      */
     boolean addItemToCart(String inProductNumber, double inAmount);
+
+    /**
+     * Calculates the total price of the items in the shopping cart.
+     * Shipping cost, any additional fees etc are not included in the calculated price.
+     *
+     * @return Total price of items in the cart.
+     */
+    Double calculateCartPrice();
 }

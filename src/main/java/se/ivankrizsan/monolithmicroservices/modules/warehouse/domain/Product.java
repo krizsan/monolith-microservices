@@ -22,7 +22,7 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
-    @Column(name="product_number", nullable = false, unique = true)
+    @Column(name = "product_number", nullable = false, unique = true)
     @NonNull
     protected String productNumber;
     @Column(nullable = false)
@@ -32,6 +32,8 @@ public class Product {
     protected double availableAmount;
     @Column(name = "reserved_amount")
     protected double reservedAmount;
+    @Column(name = "unit_price")
+    protected double unitPrice;
 
     /**
      * Creates a product having the supplied product number and the supplied name with zero

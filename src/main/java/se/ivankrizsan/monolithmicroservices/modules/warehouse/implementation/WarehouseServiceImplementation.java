@@ -29,22 +29,24 @@ public class WarehouseServiceImplementation implements WarehouseService {
 
     @Override
     public Optional<Double> retrieveProductAvailableAmount(final String inProductNumber) {
-        final Optional<Product> theProductOptional =  mProductRepository.findByProductNumber(inProductNumber);
-        if (theProductOptional.isEmpty()) {
-            return Optional.empty();
-        } else {
-            return Optional.of(theProductOptional.get().availableAmount());
-        }
+        final Optional<Product> theProductOptional = mProductRepository.findByProductNumber(inProductNumber);
+        return theProductOptional.map(Product::availableAmount);
+    }
+
+    @Override
+    public Optional<Double> retrieveProductUnitPrice(final String inProductNumber) {
+        final Optional<Product> theProductOptional = mProductRepository.findByProductNumber(inProductNumber);
+        return theProductOptional.map(Product::unitPrice);
     }
 
     @Override
     @Transactional
     public Optional<Long> reserveProduct(final String inProductNumber, final double inAmount) {
-        final Optional<Product> theProductOptional =  mProductRepository.findByProductNumber(inProductNumber);
+        final Optional<Product> theProductOptional = mProductRepository.findByProductNumber(inProductNumber);
         if (theProductOptional.isEmpty()) {
             /* No matching product. */
             return Optional.empty();
-        } else if (theProductOptional.get().availableAmount() < inAmount){
+        } else if (theProductOptional.get().availableAmount() < inAmount) {
             /* Insufficient product amount available - cannot reserve. */
             return Optional.empty();
         } else {
@@ -54,7 +56,6 @@ public class WarehouseServiceImplementation implements WarehouseService {
             final double theNewReservedAmount = theProductToReserve.reservedAmount() + inAmount;
             theProductToReserve.availableAmount(theNewAvailableAmount);
             theProductToReserve.reservedAmount(theNewReservedAmount);
-            theProductToReserve = mProductRepository.save(theProductToReserve);
 
             /* Create a product reservation for the amount. */
             final ProductReservation theProductReservation = new ProductReservation(inProductNumber, inAmount);
@@ -65,13 +66,23 @@ public class WarehouseServiceImplementation implements WarehouseService {
     }
 
     @Override
-    public void createProductInWarehouse(final String inProductNumber, final String inProductName) {
+    public Optional<Double> retrieveReservationAmount(final Long inProductReservation) {
+        final Optional<ProductReservation> theProductReservationOptional =
+            mProductReservationRepository.findById(inProductReservation);
+        return theProductReservationOptional.map(ProductReservation::getReservedAmount);
+    }
+
+    @Override
+    public void createProductInWarehouse(final String inProductNumber,
+                                         final String inProductName,
+                                         final Double inProductUnitPrice) {
         if (!mProductRepository.existsByProductNumber(inProductNumber)) {
             final Product theNewProduct = new Product()
-                    .productNumber(inProductNumber)
-                    .name(inProductName)
-                    .availableAmount(0)
-                    .reservedAmount(0);
+                .productNumber(inProductNumber)
+                .name(inProductName)
+                .availableAmount(0)
+                .reservedAmount(0)
+                .unitPrice(inProductUnitPrice);
             mProductRepository.save(theNewProduct);
         }
     }

@@ -8,6 +8,8 @@ import org.springframework.util.MultiValueMap;
 import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.api.ShoppingCartService;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -33,5 +35,31 @@ public class ShoppingCartServiceImplementation implements ShoppingCartService {
         }
 
         return false;
+    }
+
+    @Override
+    public Double calculateCartPrice() {
+        double theCartPrice = 0.0;
+
+        for (Map.Entry<String, List<Long>> theProductIdReservationsEntry : mProductReservationIds.entrySet()) {
+            final String theProductNumber = theProductIdReservationsEntry.getKey();
+            final Optional<Double> theProductPriceOptional = mWarehouseService.retrieveProductUnitPrice(theProductNumber);
+
+            if (theProductPriceOptional.isPresent()) {
+                final Double theProductPrice = theProductPriceOptional.get();
+
+                final List<Long> theProductReservations = theProductIdReservationsEntry.getValue();
+                for (Long theProductReservation : theProductReservations) {
+                    final Optional<Double> theReservationAmountOptional =
+                        mWarehouseService.retrieveReservationAmount(theProductReservation);
+                    if (theReservationAmountOptional.isPresent()) {
+                        theCartPrice = theCartPrice + (theProductPrice * theReservationAmountOptional.get());
+                    }
+                }
+            } else {
+                throw new RuntimeException("No price found for product with number " + theProductNumber);
+            }
+        }
+        return theCartPrice;
     }
 }
