@@ -1,26 +1,24 @@
-package se.ivankrizsan.monolithmicroservices.modules.shoppingcart.implementation;
+package se.ivankrizsan.monolithmicroservices.shoppingcart.implementation;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
-import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.api.ShoppingCartService;
-import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.configuration.ShoppingCartConfiguration;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.configuration.WarehouseConfiguration;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.domain.ProductReservation;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.implementation.WarehouseServiceImplementation;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.ProductRepository;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.ProductReservationRepository;
+import se.ivankrizsan.monolithmicroservices.shoppingcart.api.ShoppingCartService;
+import se.ivankrizsan.monolithmicroservices.shoppingcart.configuration.ShoppingCartConfiguration;
+import se.ivankrizsan.monolithmicroservices.warehouse.api.WarehouseService;
+import se.ivankrizsan.monolithmicroservices.warehouse.configuration.WarehouseConfiguration;
+import se.ivankrizsan.monolithmicroservices.warehouse.domain.ProductReservation;
+import se.ivankrizsan.monolithmicroservices.warehouse.persistence.ProductRepository;
+import se.ivankrizsan.monolithmicroservices.warehouse.persistence.ProductReservationRepository;
 
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Tests the {@link WarehouseServiceImplementation}.
+ * Tests the {@link ShoppingCartServiceImplementation}.
  *
  * @author Ivan Krizsan
  */
@@ -30,6 +28,7 @@ class ShoppingCartServiceImplementationTest {
     /* Constant(s): */
     public final static String PRODUCTA_PRODUCTNUMBER = "12345-1";
     public final static double PRODUCTA_AVAILABLEAMOUNT = 100;
+    public final static double PRODUCTA_UNITPRICE = 15.41;
 
     /* Instance variable(s): */
     @Autowired
@@ -46,17 +45,11 @@ class ShoppingCartServiceImplementationTest {
      */
     @BeforeEach
     void setUpBeforeEachTest() {
-        mWarehouseService.createProductInWarehouse(PRODUCTA_PRODUCTNUMBER, "Product A");
+        mWarehouseService.createProductInWarehouse(
+            PRODUCTA_PRODUCTNUMBER,
+            "Product A",
+            PRODUCTA_UNITPRICE);
         mWarehouseService.increaseProductStock(PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
-    }
-
-    /**
-     * Cleans up after each test by deleting information in database tables.
-     */
-    @AfterEach
-    void cleanUpAfterEachTest() {
-        mProductRepository.deleteAll();
-        mProductReservationsRepository.deleteAll();
     }
 
     /**
@@ -71,7 +64,7 @@ class ShoppingCartServiceImplementationTest {
         final boolean theAddItemSuccessFlag = mShoppingCartService.addItemToCart(
             PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
         Assertions.assertTrue(theAddItemSuccessFlag,
-            "It should be possible to add all the remaining stock for a product to the shoppingcart");
+            "It should be possible to add all the remaining stock for a product to the shopping cart");
 
         final Optional<Double> theRemainingAvailableAmountOptional =
             mWarehouseService.retrieveProductAvailableAmount(PRODUCTA_PRODUCTNUMBER);
@@ -112,5 +105,23 @@ class ShoppingCartServiceImplementationTest {
             mProductReservationsRepository.findAllByProductNumber(PRODUCTA_PRODUCTNUMBER);
         Assertions.assertEquals(0, theProductAReservations.size(),
             "There should be no reservations for the product");
+    }
+
+    /**
+     * Tests calculating the price of the products in the shopping cart.
+     * Expected result:
+     * The total price of the products in the shopping cart should be correctly calculated.
+     */
+    @Test
+    void calculateCartPriceTest() {
+        final boolean theAddItemSuccessFlag = mShoppingCartService.addItemToCart(
+            PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
+        Assertions.assertTrue(theAddItemSuccessFlag,
+            "It should be possible to add all the remaining stock for a product to the shoppingcart");
+
+        final Double theCartPrice = mShoppingCartService.calculateCartPrice();
+        Assertions.assertEquals(PRODUCTA_AVAILABLEAMOUNT * PRODUCTA_UNITPRICE,
+            theCartPrice,
+            "The total price of the products in the shopping cart should be correctly calculated");
     }
 }

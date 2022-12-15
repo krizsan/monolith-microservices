@@ -2,6 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>warehouse</module>
+        <module>shoppingcart</module>
+        <module>payment</module>
+    </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -10,10 +16,10 @@
     </parent>
 
     <groupId>se.ivankrizsan</groupId>
-    <artifactId>monolith-microservices</artifactId>
+    <artifactId>monolith-microservices-jigsaw</artifactId>
     <version>1.0.0-SNAPSHOT</version>
-    <name>monolith-microservices</name>
-    <description>monolith-microservices</description>
+    <name>monolith-microservices-jigsaw</name>
+    <description>monolith-microservices-jigsaw</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -30,12 +36,12 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <dependency>
+<!--        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>

@@ -1,5 +1,6 @@
 package se.ivankrizsan.monolithmicroservices.modules.warehouse.implementation;
 
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,10 +8,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.configuration.WarehouseConfiguration;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.ProductRepository;
-import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.ProductReservationRepository;
+import se.ivankrizsan.monolithmicroservices.warehouse.api.WarehouseService;
+import se.ivankrizsan.monolithmicroservices.warehouse.configuration.WarehouseConfiguration;
+import se.ivankrizsan.monolithmicroservices.warehouse.persistence.ProductRepository;
+import se.ivankrizsan.monolithmicroservices.warehouse.persistence.ProductReservationRepository;
 
 import java.util.Optional;
 
@@ -27,6 +28,7 @@ class WarehouseServiceImplementationTest {
     public final static String NONEXISTING_PRODUCTNUMBER = "00000-0";
     public final static double PRODUCTA_AVAILABLEAMOUNT = 100;
     public final static double PRODUCTA_RESERVEAMOUNT = 55;
+    public final static double PRODUCTA_UNITPRICE = 15.41;
 
     /* Instance variable(s): */
     @Autowired
@@ -41,7 +43,10 @@ class WarehouseServiceImplementationTest {
      */
     @BeforeEach
     void setUpBeforeEachTest() {
-        mWarehouseService.createProductInWarehouse(PRODUCTA_PRODUCTNUMBER, "Product A");
+        mWarehouseService.createProductInWarehouse(
+            PRODUCTA_PRODUCTNUMBER,
+            "Product A",
+            PRODUCTA_UNITPRICE);
         mWarehouseService.increaseProductStock(PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
     }
 
@@ -153,5 +158,18 @@ class WarehouseServiceImplementationTest {
         Assertions.assertTrue(theProductAAmountOptional.isPresent());
         Assertions.assertEquals(PRODUCTA_AVAILABLEAMOUNT, theProductAAmountOptional.get(),
             "The available amount of the product should not change");
+    }
+
+    /**
+     * Tests retrieving a product unit price for an existing product.
+     * Expected result:
+     * The unit price of the product should be successfully retrieved.
+     */
+    @Test
+    void retrieveExistingProductUnitPriceTest() {
+        final Optional<Double> theProductPriceOptional = mWarehouseService.retrieveProductUnitPrice(PRODUCTA_PRODUCTNUMBER);
+
+        Assertions.assertTrue(theProductPriceOptional.isPresent(),
+            "The unit price of the product should be successfully retrieved");
     }
 }
