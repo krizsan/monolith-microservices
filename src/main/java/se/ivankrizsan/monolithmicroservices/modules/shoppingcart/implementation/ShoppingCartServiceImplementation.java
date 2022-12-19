@@ -62,4 +62,9 @@ public class ShoppingCartServiceImplementation implements ShoppingCartService {
         }
         return theCartPrice;
     }
+
+    @Override
+    public Optional<String> placeOrder(String inPaymentId) {
+        return Optional.empty();
+    }
 }

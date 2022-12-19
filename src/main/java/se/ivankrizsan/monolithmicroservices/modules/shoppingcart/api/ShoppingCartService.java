@@ -1,5 +1,7 @@
 package se.ivankrizsan.monolithmicroservices.modules.shoppingcart.api;
 
+import java.util.Optional;
+
 /**
  * The shopping cart service manages a shopping cart.
  * Note: In its current incarnation, the service only manages a single shopping cart at a time.
@@ -24,4 +26,15 @@ public interface ShoppingCartService {
      * @return Total price of items in the cart.
      */
     Double calculateCartPrice();
+
+
+    /**
+     * Places an order for the items in the shoppingcart that has been successfully paid for by
+     * the payment with the supplied payment id.
+     * No verification is made that the payment covers the cost of the items in the shoppingcart.
+     *
+     * @param inPaymentId Id of the payment that has paid for the items in the shoppingcart.
+     * @return Order id if order successfully placed, empty otherwise.
+     */
+    Optional<String> placeOrder(final String inPaymentId);
 }

@@ -14,5 +14,5 @@ public interface PaymentService {
      *
      * @return Payment identifier if payment successful, empty otherwise.
      */
-    Optional<Long> makePayment(double inPaymentAmount);
+    Optional<String> makePayment(double inPaymentAmount);
 }

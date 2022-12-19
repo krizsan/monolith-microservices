@@ -11,7 +11,7 @@ import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.persistence.Sho
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
 
 /**
- * Configuration that creates the necessary beans needed for the shopping-cart service.
+ * Configuration that creates the necessary beans needed for the shoppingcart service.
  *
  * @author Ivan Krizsan
  */
@@ -25,11 +25,11 @@ public class ShoppingCartConfiguration {
 
 
     /**
-     * Creates a shopping-cart service for shopping products in the warehouse represented by the
+     * Creates a shoppingcart service for shopping products in the warehouse represented by the
      * supplied warehouse service.
      *
      * @param inWarehouseService Warehouse service representing warehouse with products.
-     * @return Shopping-cart service.
+     * @return Shoppingcart service.
      */
     @Bean
     protected ShoppingCartService shoppingCartService(final WarehouseService inWarehouseService) {
