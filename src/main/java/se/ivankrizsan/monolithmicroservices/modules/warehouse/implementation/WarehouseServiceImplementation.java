@@ -66,10 +66,22 @@ public class WarehouseServiceImplementation implements WarehouseService {
     }
 
     @Override
-    public Optional<Double> retrieveReservationAmount(final Long inProductReservation) {
+    public Optional<Double> retrieveReservationAmount(final Long inProductReservationId) {
         final Optional<ProductReservation> theProductReservationOptional =
-            mProductReservationRepository.findById(inProductReservation);
+            mProductReservationRepository.findById(inProductReservationId);
         return theProductReservationOptional.map(ProductReservation::getReservedAmount);
+    }
+
+    @Override
+    public boolean removeProductReservation(final Long inProductReservationId) {
+        final Optional<ProductReservation> theProductReservationOptional =
+            mProductReservationRepository.findById(inProductReservationId);
+
+        if (theProductReservationOptional.isPresent()) {
+            mProductReservationRepository.deleteById(inProductReservationId);
+        }
+
+        return theProductReservationOptional.isPresent();
     }
 
     @Override

@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import se.ivankrizsan.monolithmicroservices.modules.order.api.OrderService;
 import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.api.ShoppingCartService;
 import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.domain.ShoppingCartItem;
 import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.implementation.ShoppingCartServiceImplementation;
@@ -11,7 +12,7 @@ import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.persistence.Sho
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
 
 /**
- * Configuration that creates the necessary beans needed for the shopping-cart service.
+ * Configuration that creates the necessary beans needed for the shoppingcart service.
  *
  * @author Ivan Krizsan
  */
@@ -19,20 +20,19 @@ import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseServi
 @EntityScan(basePackageClasses = ShoppingCartItem.class)
 @EnableJpaRepositories(basePackageClasses = ShoppingCartItemRepository.class)
 public class ShoppingCartConfiguration {
-    /* Constant(s): */
-
-    /* Dependencies: */
-
 
     /**
-     * Creates a shopping-cart service for shopping products in the warehouse represented by the
-     * supplied warehouse service.
+     * Creates a shoppingcart service for shopping products in the warehouse represented by the
+     * supplied warehouse service and which later can place an order for the items in the cart
+     * using the supplied order service.
      *
      * @param inWarehouseService Warehouse service representing warehouse with products.
-     * @return Shopping-cart service.
+     * @param inOrderService Order service creating and managing orders.
+     * @return Shoppingcart service.
      */
     @Bean
-    protected ShoppingCartService shoppingCartService(final WarehouseService inWarehouseService) {
-        return new ShoppingCartServiceImplementation(inWarehouseService);
+    protected ShoppingCartService shoppingCartService(final WarehouseService inWarehouseService,
+                                                      final OrderService inOrderService) {
+        return new ShoppingCartServiceImplementation(inWarehouseService, inOrderService);
     }
 }

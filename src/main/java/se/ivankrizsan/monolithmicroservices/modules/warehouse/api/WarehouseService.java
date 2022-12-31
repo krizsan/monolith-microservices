@@ -29,6 +29,8 @@ public interface WarehouseService {
 
     /**
      * Reserves the supplied amount of the product in the warehouse with the supplied product number.
+     * The product stock will be reduced with the amount to reserved if there is enough of
+     * the product in stock.
      *
      * @param inProductNumber Product number of the product to reserve.
      * @param inAmount Amount of the product to reserve.
@@ -37,12 +39,23 @@ public interface WarehouseService {
     Optional<Long> reserveProduct(String inProductNumber, double inAmount);
 
     /**
-     * Retrieves the reserved amount for the supplied product reservation.
+     * Removes the product reservation with the supplied id.
+     * Does nothing if there is no product reservation with the supplied id.
+     * The semantics of this operation is that stock of the warehouse, which previously has been reserved,
+     * is consumed without affecting the available stock level.
      *
-     * @param inProductReservation Product reservation for which to retrieve reserved amount.
+     * @param inProductReservationId Id of product reservation which to remove.
+     * @return True if product reservation was successfully removed, false otherwise.
+     */
+    boolean removeProductReservation(Long inProductReservationId);
+
+    /**
+     * Retrieves the reserved amount for the product reservation with the supplied id.
+     *
+     * @param inProductReservationId Product reservation id for which to retrieve reserved amount.
      * @return Reserved amount or empty if no product reservation exists.
      */
-    Optional<Double> retrieveReservationAmount(Long inProductReservation);
+    Optional<Double> retrieveReservationAmount(Long inProductReservationId);
 
     /**
      * Creates the product with the supplied product number, the supplied name and the supplied unit

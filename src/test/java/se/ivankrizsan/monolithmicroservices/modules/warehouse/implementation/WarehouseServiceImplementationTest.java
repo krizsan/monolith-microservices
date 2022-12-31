@@ -124,6 +124,55 @@ class WarehouseServiceImplementationTest {
     }
 
     /**
+     * Tests removing an existing product reservation.
+     * Expected result:
+     * The product reservation should be successfully removed.
+     * The available amount of the product should not change.
+     */
+    @Test
+    void removeExistingProductReservationTest() {
+        /* Reserve some amount of a product. */
+        final Optional<Long> theProductReservationOptional = mWarehouseService.reserveProduct(
+            PRODUCTA_PRODUCTNUMBER, PRODUCTA_RESERVEAMOUNT);
+        Assertions.assertTrue(theProductReservationOptional.isPresent(), "The product reservation should be successful");
+
+        /* Find the available amount of the product after the reservation. */
+        final Optional<Double> theAvailableAmountBeforeOptional =
+            mWarehouseService.retrieveProductAvailableAmount(PRODUCTA_PRODUCTNUMBER);
+        Assertions.assertTrue(theAvailableAmountBeforeOptional.isPresent());
+
+        /* Remove the product reservation. */
+        final boolean theReservationRemovedFlag =
+            mWarehouseService.removeProductReservation(theProductReservationOptional.get());
+        Assertions.assertTrue(theReservationRemovedFlag, "The product reservation should be successfully removed");
+
+        /* Verify the available amount of the product after the removal of the reservation. */
+        final Optional<Double> theAvailableAmountAfterOptional =
+            mWarehouseService.retrieveProductAvailableAmount(PRODUCTA_PRODUCTNUMBER);
+        Assertions.assertEquals(theAvailableAmountBeforeOptional.get(),
+            theAvailableAmountAfterOptional.get(),
+            "The available amount of the product should not change");
+    }
+
+    /**
+     * Tests removing a non-existing product reservation.
+     * Expected result:
+     * The operation should indicate that no product reservation was removed.
+     */
+    @Test
+    void removeNonExistingProductReservationTest() {
+        /* Find the available amount of the product after the reservation. */
+        final Optional<Double> theAvailableAmountBeforeOptional =
+            mWarehouseService.retrieveProductAvailableAmount(PRODUCTA_PRODUCTNUMBER);
+        Assertions.assertTrue(theAvailableAmountBeforeOptional.isPresent());
+
+        /* Attempt to remove a product reservation. */
+        final boolean theReservationRemovedFlag =
+            mWarehouseService.removeProductReservation(1234L);
+        Assertions.assertFalse(theReservationRemovedFlag, "The operation should indicate that no product reservation was removed");
+    }
+
+    /**
      * Tests attempting a reservation for a product that does not exist.
      * Expected result:
      * The reservation should be unsuccessful.

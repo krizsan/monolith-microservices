@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ContextConfiguration;
+import se.ivankrizsan.monolithmicroservices.modules.order.configuration.OrderServiceConfiguration;
 import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.api.ShoppingCartService;
 import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.configuration.ShoppingCartConfiguration;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
@@ -16,6 +17,7 @@ import se.ivankrizsan.monolithmicroservices.modules.warehouse.persistence.Produc
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Tests the {@link ShoppingCartServiceImplementation}.
@@ -23,12 +25,16 @@ import java.util.Optional;
  * @author Ivan Krizsan
  */
 @DataJpaTest()
-@ContextConfiguration(classes = { ShoppingCartConfiguration.class, WarehouseConfiguration.class })
+@ContextConfiguration(classes = { ShoppingCartConfiguration.class, WarehouseConfiguration.class,
+    OrderServiceConfiguration.class })
 class ShoppingCartServiceImplementationTest {
     /* Constant(s): */
     public final static String PRODUCTA_PRODUCTNUMBER = "12345-1";
     public final static double PRODUCTA_AVAILABLEAMOUNT = 100;
     public final static double PRODUCTA_UNITPRICE = 15.41;
+    public final static String PRODUCTB_PRODUCTNUMBER = "54321-1";
+    public final static double PRODUCTB_AVAILABLEAMOUNT = 50;
+    public final static double PRODUCTB_UNITPRICE = 33.90;
 
     /* Instance variable(s): */
     @Autowired
@@ -41,7 +47,7 @@ class ShoppingCartServiceImplementationTest {
     protected ProductReservationRepository mProductReservationsRepository;
 
     /**
-     * Sets up information in database tables before each test.
+     * Sets up products in warehouse before each test.
      */
     @BeforeEach
     void setUpBeforeEachTest() {
@@ -50,10 +56,16 @@ class ShoppingCartServiceImplementationTest {
             "Product A",
             PRODUCTA_UNITPRICE);
         mWarehouseService.increaseProductStock(PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
+
+        mWarehouseService.createProductInWarehouse(
+            PRODUCTB_PRODUCTNUMBER,
+            "Product B",
+            PRODUCTB_UNITPRICE);
+        mWarehouseService.increaseProductStock(PRODUCTB_PRODUCTNUMBER, PRODUCTB_AVAILABLEAMOUNT);
     }
 
     /**
-     * Tests adding all the remaining stock of a product to the shopping-cart.
+     * Tests adding all the remaining stock of a product to the shoppingcart.
      * Expected result:
      * All the remaining stock of the product should have been placed in the cart.
      * All the stock of the product should be reserved.
@@ -82,9 +94,9 @@ class ShoppingCartServiceImplementationTest {
     }
 
     /**
-     * Tests adding more than the remaining stock of a product to the shopping-cart.
+     * Tests adding more than the remaining stock of a product to the shoppingcart.
      * Expected result:
-     * Adding the product to the shopping-cart should fail.
+     * Adding the product to the shoppingcart should fail.
      * There should be no reservations of the product.
      * The available amount of the product in the warehouse should remain unchanged.
      */
@@ -114,14 +126,68 @@ class ShoppingCartServiceImplementationTest {
      */
     @Test
     void calculateCartPriceTest() {
-        final boolean theAddItemSuccessFlag = mShoppingCartService.addItemToCart(
-                PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
-        Assertions.assertTrue(theAddItemSuccessFlag,
-            "It should be possible to add all the remaining stock for a product to the shoppingcart");
+        addTwoProductsToShoppingCart();
 
         final Double theCartPrice = mShoppingCartService.calculateCartPrice();
-        Assertions.assertEquals(PRODUCTA_AVAILABLEAMOUNT * PRODUCTA_UNITPRICE,
+        final double theExpectedCartPrice = PRODUCTA_AVAILABLEAMOUNT * PRODUCTA_UNITPRICE + PRODUCTB_UNITPRICE;
+        Assertions.assertEquals(theExpectedCartPrice,
                 theCartPrice,
                 "The total price of the products in the shopping cart should be correctly calculated");
+    }
+
+    private void addTwoProductsToShoppingCart() {
+        final boolean theAddItemASuccessFlag = mShoppingCartService.addItemToCart(
+                PRODUCTA_PRODUCTNUMBER, PRODUCTA_AVAILABLEAMOUNT);
+        Assertions.assertTrue(theAddItemASuccessFlag,
+            "It should be possible to add Product A to the shoppingcart");
+
+        final boolean theAddItemBSuccessFlag = mShoppingCartService.addItemToCart(
+            PRODUCTB_PRODUCTNUMBER, 1);
+        Assertions.assertTrue(theAddItemBSuccessFlag,
+            "It should be possible to add Product B to the shoppingcart");
+    }
+
+    /**
+     * Tests ordering the items in the shoppingcart.
+     * Expected outcome:
+     * An order should be successfully placed.
+     */
+    @Test
+    public void placeOrderItemsInCartTest() {
+        addTwoProductsToShoppingCart();
+
+        final Optional<String> theOrderIdOptional = mShoppingCartService.placeOrder(UUID.randomUUID().toString());
+
+        Assertions.assertTrue(theOrderIdOptional.isPresent(), "An order should be successfully placed");
+    }
+
+    /**
+     * Tests placing an order with an empty shoppingcart.
+     * Expected outcome:
+     * No order should be placed.
+     */
+    @Test
+    public void placeOrderNoItemsInCartTest() {
+        final Optional<String> theOrderIdOptional = mShoppingCartService.placeOrder(UUID.randomUUID().toString());
+
+        Assertions.assertFalse(
+            theOrderIdOptional.isPresent(),
+            "No order should be placed without items in the shoppingcart");
+    }
+
+    /**
+     * Tests placing an order with no payment id supplied
+     * Expected outcome:
+     * No order should be placed.
+     */
+    @Test
+    public void placeOrderNoPaymentTest() {
+        addTwoProductsToShoppingCart();
+
+        final Optional<String> theOrderIdOptional = mShoppingCartService.placeOrder(null);
+
+        Assertions.assertFalse(
+            theOrderIdOptional.isPresent(),
+            "No order should be placed without a payment id");
     }
 }

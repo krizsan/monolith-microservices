@@ -5,6 +5,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import se.ivankrizsan.monolithmicroservices.modules.order.api.OrderService;
 import se.ivankrizsan.monolithmicroservices.modules.shoppingcart.api.ShoppingCartService;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
 
@@ -22,6 +23,9 @@ public class ShoppingCartServiceImplementation implements ShoppingCartService {
     /** Warehouse from which items placed in the shopping cart will be taken. */
     @NonNull
     protected WarehouseService mWarehouseService;
+    /** Service handling orders. */
+    @NonNull
+    protected OrderService mOrderService;
     /** Product reservations associated with the shopping cart. */
     protected MultiValueMap<String, Long> mProductReservationIds = new LinkedMultiValueMap<>() {};
 
@@ -61,5 +65,10 @@ public class ShoppingCartServiceImplementation implements ShoppingCartService {
             }
         }
         return theCartPrice;
+    }
+
+    @Override
+    public Optional<String> placeOrder(String inPaymentId) {
+        throw new Error("Implement me!");
     }
 }
