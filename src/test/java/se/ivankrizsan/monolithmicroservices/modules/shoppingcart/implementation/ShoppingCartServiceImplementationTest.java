@@ -51,6 +51,8 @@ class ShoppingCartServiceImplementationTest {
      */
     @BeforeEach
     void setUpBeforeEachTest() {
+        mShoppingCartService.emptyCart();
+
         mWarehouseService.createProductInWarehouse(
             PRODUCTA_PRODUCTNUMBER,
             "Product A",
@@ -156,7 +158,7 @@ class ShoppingCartServiceImplementationTest {
     public void placeOrderItemsInCartTest() {
         addTwoProductsToShoppingCart();
 
-        final Optional<String> theOrderIdOptional = mShoppingCartService.placeOrder(UUID.randomUUID().toString());
+        final Optional<Long> theOrderIdOptional = mShoppingCartService.placeOrder(UUID.randomUUID().toString());
 
         Assertions.assertTrue(theOrderIdOptional.isPresent(), "An order should be successfully placed");
     }
@@ -168,7 +170,7 @@ class ShoppingCartServiceImplementationTest {
      */
     @Test
     public void placeOrderNoItemsInCartTest() {
-        final Optional<String> theOrderIdOptional = mShoppingCartService.placeOrder(UUID.randomUUID().toString());
+        final Optional<Long> theOrderIdOptional = mShoppingCartService.placeOrder(UUID.randomUUID().toString());
 
         Assertions.assertFalse(
             theOrderIdOptional.isPresent(),
@@ -178,16 +180,12 @@ class ShoppingCartServiceImplementationTest {
     /**
      * Tests placing an order with no payment id supplied
      * Expected outcome:
-     * No order should be placed.
+     * An exception should be thrown.
      */
     @Test
     public void placeOrderNoPaymentTest() {
         addTwoProductsToShoppingCart();
 
-        final Optional<String> theOrderIdOptional = mShoppingCartService.placeOrder(null);
-
-        Assertions.assertFalse(
-            theOrderIdOptional.isPresent(),
-            "No order should be placed without a payment id");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> mShoppingCartService.placeOrder(null));
     }
 }

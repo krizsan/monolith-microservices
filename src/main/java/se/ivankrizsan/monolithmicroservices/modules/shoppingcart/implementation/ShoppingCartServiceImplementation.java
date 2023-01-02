@@ -3,6 +3,7 @@ package se.ivankrizsan.monolithmicroservices.modules.shoppingcart.implementation
 import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import se.ivankrizsan.monolithmicroservices.modules.order.api.OrderService;
@@ -42,6 +43,11 @@ public class ShoppingCartServiceImplementation implements ShoppingCartService {
     }
 
     @Override
+    public void emptyCart() {
+        mProductReservationIds.clear();
+    }
+
+    @Override
     public Double calculateCartPrice() {
         double theCartPrice = 0.0;
 
@@ -68,7 +74,30 @@ public class ShoppingCartServiceImplementation implements ShoppingCartService {
     }
 
     @Override
-    public Optional<String> placeOrder(String inPaymentId) {
-        throw new Error("Implement me!");
+    public Optional<Long> placeOrder(String inPaymentId) {
+        /* No meaning in placing an order with an empty shopping cart. */
+        if (mProductReservationIds.isEmpty()) {
+            return Optional.empty();
+        }
+        /* The order must be paid for prior to placing it. */
+        Assert.hasText(inPaymentId, "A payment id is required");
+
+        final Optional<Long> theOrderIdOptional = mOrderService.createOrder(inPaymentId);
+        if (theOrderIdOptional.isPresent()) {
+            final Long theOrderId = theOrderIdOptional.get();
+            for (String theProductNumber : mProductReservationIds.keySet()) {
+                final List<Long> theReservationIds = mProductReservationIds.get(theProductNumber);
+                final boolean theSuccessFlag = mOrderService.addItemsToOrder(theOrderId, theProductNumber,
+                    theReservationIds);
+                if (!theSuccessFlag) {
+                    mOrderService.deleteOrder(theOrderId);
+                    return Optional.empty();
+                }
+            }
+
+            return Optional.of(theOrderId);
+        }
+
+        return Optional.empty();
     }
 }

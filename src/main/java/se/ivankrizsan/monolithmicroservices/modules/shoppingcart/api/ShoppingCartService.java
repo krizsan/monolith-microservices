@@ -20,6 +20,11 @@ public interface ShoppingCartService {
     boolean addItemToCart(String inProductNumber, double inAmount);
 
     /**
+     * Empties the shopping cart.
+     */
+    void emptyCart();
+
+    /**
      * Calculates the total price of the items in the shopping cart.
      * Shipping cost, any additional fees etc are not included in the calculated price.
      *
@@ -36,5 +41,5 @@ public interface ShoppingCartService {
      * @param inPaymentId Id of the payment that has paid for the items in the shoppingcart.
      * @return Order id if order successfully placed, empty otherwise.
      */
-    Optional<String> placeOrder(final String inPaymentId);
+    Optional<Long> placeOrder(final String inPaymentId);
 }

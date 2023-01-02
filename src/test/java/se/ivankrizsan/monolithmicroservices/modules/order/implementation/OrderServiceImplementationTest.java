@@ -10,6 +10,7 @@ import se.ivankrizsan.monolithmicroservices.modules.order.configuration.OrderSer
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.api.WarehouseService;
 import se.ivankrizsan.monolithmicroservices.modules.warehouse.configuration.WarehouseConfiguration;
 
+import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -38,7 +39,7 @@ public class OrderServiceImplementationTest {
      */
     @Test
     public void createOrderWithGoodPaymentIdTest() {
-        final Optional<String> theNewOrderIdOptional = mOrderService.createOrder("12343");
+        final Optional<Long> theNewOrderIdOptional = mOrderService.createOrder("12343");
 
         Assertions.assertTrue(theNewOrderIdOptional.isPresent(), "An id of the new order should be created");
     }
@@ -61,7 +62,7 @@ public class OrderServiceImplementationTest {
      * The item should be successfully added to the order.
      */
     @Test
-    public void addItemToOrderSuccessfulTest() {
+    public void addSingleItemToOrderSuccessfulTest() {
         /* Make a reservation for an item that will be part of the order. */
         mWarehouseService.createProductInWarehouse(
             PRODUCTA_PRODUCTNUMBER,
@@ -73,29 +74,28 @@ public class OrderServiceImplementationTest {
         final Long theReservationId = theProductReservationOptional.get();
 
         /* Create an order to which the reserved item will be added. */
-        final Optional<String> theNewOrderIdOptional = mOrderService.createOrder("12343");
-        final String theOrderId = theNewOrderIdOptional.get();
+        final Optional<Long> theNewOrderIdOptional = mOrderService.createOrder("12343");
+        final Long theOrderId = theNewOrderIdOptional.get();
 
         /* Add the item to the order and verify the outcome. */
-        final boolean theAddItemToOrderFlag = mOrderService.addItemToOrder(theOrderId, PRODUCTA_PRODUCTNUMBER,
-            theReservationId);
+        final boolean theAddItemToOrderFlag = mOrderService.addItemsToOrder(theOrderId, PRODUCTA_PRODUCTNUMBER,
+            Collections.singletonList(theReservationId));
         Assertions.assertTrue(theAddItemToOrderFlag, "The item should be successfully added to the order");
     }
 
     /**
      * Tests adding an item for which there is no reservation.
      * Expected result:
-     * The item should not be added to the order.
+     * An exception should be thrown.
      */
     @Test
-    public void addItemNotReservedToOrderTest() {
+    public void addSingleItemNotReservedToOrderTest() {
         /* Create an order to which to attempt to add the item without reservation. */
-        final Optional<String> theNewOrderIdOptional = mOrderService.createOrder("12343");
-        final String theOrderId = theNewOrderIdOptional.get();
+        final Optional<Long> theNewOrderIdOptional = mOrderService.createOrder("12343");
+        final Long theOrderId = theNewOrderIdOptional.get();
 
-        /* Add the item to the order and verify the outcome. */
-        final boolean theAddItemToOrderFlag = mOrderService.addItemToOrder(theOrderId, PRODUCTA_PRODUCTNUMBER,
-            12345L);
-        Assertions.assertFalse(theAddItemToOrderFlag, "The item should not be added to the order");
+        /* Add the items to the order and verify the outcome. */
+        Assertions.assertThrows(IllegalStateException.class, () ->
+            mOrderService.addItemsToOrder(theOrderId, PRODUCTA_PRODUCTNUMBER, Collections.singletonList(12345L)));
     }
 }
